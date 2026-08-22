@@ -49,7 +49,7 @@ The production executable is built from these modules:
 
 ## Requirements
 
-- A C++17 compiler. GCC, Clang, and Microsoft Visual C++ are supported.
+- A C++11 compiler. GCC, Clang, and Microsoft Visual C++ are supported.
 - Python 3 for graph and query generation.
 - Sufficient memory for the selected temporal graph and index.
 
@@ -80,6 +80,8 @@ The executable writes the Historical-SCC result for every query to the specified
 ## How to Use It
 
 The following scripts should be run on a Linux platform.
+
+The temporal graph datasets used by the generation script are obtained from [SNAP](https://snap.stanford.edu/data/index.html) and [KONECT](http://konect.cc/).
 
 - Run `graph-gen.sh` to generate graph data automatically. The script downloads datasets from [SNAP](https://snap.stanford.edu/data/index.html) and [KONECT](http://konect.cc/) and processes the selected dataset into `graph.txt`:
 

@@ -1,23 +1,11 @@
-CXX ?= g++
-CXXFLAGS ?= -O3 -std=c++17
-TARGET := FINDSCC
-SOURCES := \
-	source/baseline.cpp \
-	source/commonfunctions.cpp \
-	source/main.cpp \
-	source/online_search.cpp \
-	source/optimized.cpp \
-	source/temporal_graph.cpp
+OBJS=commonfunctions.o temporal_graph.o online_search.o baseline.o optimized.o main.o
+CC=g++
+CFLAGS=-c -std=c++11 -O3
 
-.PHONY: all clean amazon
-
-all: $(TARGET)
-
-$(TARGET): $(SOURCES)
-	$(CXX) $(CXXFLAGS) -Isource $(SOURCES) -o $(TARGET)
-
-amazon: amazon_handler.cpp
-	$(CXX) $(CXXFLAGS) amazon_handler.cpp -o amazon_handler
+main:$(OBJS)
+	$(CC) $^ -o main -O3
+%.o:source/%.cpp
+	$(CC) $^ $(CFLAGS)
 
 clean:
-	$(RM) $(TARGET) $(TARGET).exe amazon_handler amazon_handler.exe
+	$(RM) *.o main

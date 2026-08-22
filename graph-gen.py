@@ -74,7 +74,7 @@ def showProcess():
         print('\bdone')
     else:
         print('\berror!')
-
+    
 def takeThird(triple):
     return triple[2]
 
@@ -333,7 +333,7 @@ if __name__ == "__main__":
     else:
         print("Invalid input! Program terminated.")
         exit()
-
+    
     # normalize the graph
     waiting_message = "Normalizing the graph..."
     is_finished = False

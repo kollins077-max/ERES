@@ -1,16 +1,14 @@
-#!/usr/bin/env sh
-set -eu
-
-if [ "$#" -lt 1 ]; then
-    echo "Usage: ./run.sh MODE [INITIAL_FRACTION UPDATE_EDGES]" >&2
-    exit 1
-fi
-
+echo "Compiling..."
 make
-
-binary="./FINDSCC"
-if [ ! -x "$binary" ] && [ -x "./FINDSCC.exe" ]; then
-    binary="./FINDSCC.exe"
+echo "Running..."
+if [ -n "$3" ]; then
+    ./main graph.txt query.txt output.txt $1 $2 $3
+elif [ -n "$2" ]; then
+    ./main graph.txt query.txt output.txt $1 $2
+elif [ -n "$1" ]; then
+    ./main graph.txt query.txt output.txt $1
+else
+    ./main graph.txt query.txt output_online.txt Online > log_online.txt
+    ./main graph.txt query.txt output_baseline.txt Baseline > log_baseline.txt
+    ./main graph.txt query.txt output_RES.txt RES > log_RES.txt
 fi
-
-exec "$binary" graph.txt query.txt output.txt "$@"
