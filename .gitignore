@@ -1,0 +1,31 @@
+# Build products
+FINDSCC
+FINDSCC.exe
+amazon_handler
+amazon_handler.exe
+*.o
+*.obj
+*.pdb
+/build/
+/x64/
+/Debug/
+/Release/
+
+# Downloaded datasets and generated experiment files
+/datasets/
+/graph.txt
+/query.txt
+/output*.txt
+/log*.txt
+/result*.txt
+
+# Python and editor caches
+__pycache__/
+*.py[cod]
+.vs/
+.vscode/
+.idea/
+
+# Operating-system files
+.DS_Store
+Thumbs.db

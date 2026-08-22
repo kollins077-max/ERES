@@ -213,4 +213,3 @@ Construction and update modes print:
 - total query-processing time.
 
 Progress messages are emitted during long RES and IRES constructions so large experiments can be monitored.
-
