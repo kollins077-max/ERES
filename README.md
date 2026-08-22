@@ -89,11 +89,15 @@ The temporal graph datasets used by the generation script are obtained from [SNA
 sh graph-gen.sh
 ```
 
+When prompted, select a dataset and enter the fraction of that dataset to process. On the first run, the script downloads the configured datasets and then normalizes the selected graph into `graph.txt`.
+
 - Run `query-gen.sh` to generate query data automatically. The script writes the generated queries into `query.txt`:
 
 ```bash
 sh query-gen.sh
 ```
+
+When prompted, enter the number of queries and the query-window length as a fraction of the graph's maximum timestamp.
 
 - Run the following command to execute a solution:
 
@@ -118,6 +122,8 @@ On Windows, first build `IRES.vcxproj` with the `Release|x64` configuration in V
 python .\graph-gen.py
 python .\query-gen.py
 ```
+
+These commands use the same interactive prompts as the Linux scripts: select the graph dataset and fraction first, then enter the number of queries and the relative query-window length.
 
 Run a solution with:
 
@@ -215,3 +221,4 @@ Construction and update modes print:
 - total query-processing time.
 
 Progress messages are emitted during long RES and IRES constructions so large experiments can be monitored.
+
