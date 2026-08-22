@@ -59,7 +59,6 @@ int TemporalGraph::size() {
 }
 
 TemporalGraph::TemporalGraph(char *graph_file, char *graph_type, double factor) {
-// 这个类是从指定的图数据文件中初始化时序图
     int u, v, t;
     std::ifstream fin(graph_file);
 
@@ -126,3 +125,4 @@ TemporalGraph::~TemporalGraph() {
     }
 
 }
+
