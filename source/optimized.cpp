@@ -4276,7 +4276,7 @@ OptimizedIndex * OptimizedIndex::buildSingleEdgeExperiment(
             std::pair<int,int> interval;
             if (enableInfluenceInterval) {
                 unsigned long long intervalStart = currentTime();
-                interval = computePaperInfluenceInterval(
+                interval = computeForwardResInfluenceInterval(
                     Index->n, activeEdges, newEdge);
                 eresIntervalMicros += currentTime() - intervalStart;
             }
