@@ -97,10 +97,6 @@ def takeThird(triple):
 #         lines = src.readlines()
 
 def move_data_file(source, destination, fraction=1.0):
-    """
-    将数据文件复制到目标文件，并支持抽取前 fraction 比例的数据。
-    例如 fraction=0.1 表示仅使用前 10% 的边。
-    """
     if source.endswith(".txt"):
         source_path = os.path.join('datasets', source)
     else:
@@ -130,7 +126,6 @@ def move_data_file(source, destination, fraction=1.0):
     print(f"✅ Extracted {written} lines out of {total_lines} ({fraction*100:.1f}% of dataset)")
 
 
-    # # 只取前 1/10 的数据
     # subset_size = max(1, len(lines) // 10)
     # lines = lines[:subset_size]
 
