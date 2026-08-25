@@ -1,6 +1,6 @@
-# IRES: Incremental RES for Historical-SCC Queries
+# ERES: End-Time-Based RES for Historical-SCC Queries
 
-This repository contains the C++ implementation and experiment drivers for IRES, an incremental index for Historical Strongly Connected Component (Historical-SCC) queries on directed temporal graphs. The implementation extends the RES codebase released with [spannedSCC](https://github.com/ForwardStar/spannedSCC).
+This repository contains the C++ implementation and experiment drivers for ERES, an incremental index for Historical Strongly Connected Component (Historical-SCC) queries on directed temporal graphs. The implementation extends the RES codebase released with [spannedSCC](https://github.com/ForwardStar/spannedSCC).
 
 The public artifact focuses on executable code and data-preparation utilities. Experimental datasets and manuscript files are not included.
 
@@ -10,16 +10,16 @@ The executable provides the following primary experiment modes.
 
 | Task | Mode | Description |
 |---|---|---|
-| Full construction | `RES` | Original start-time-oriented RES construction. |
-| Full construction | `IRES` | End-time-oriented IRES construction with reverse-chronological reuse and pruning. |
+| Full construction | `RES-con` | Original start-time-oriented RES construction. |
+| Full construction | `ERES-con` | End-time-oriented ERES construction with reverse-chronological reuse and pruning. |
 | Single-edge update | `RES-Single` | Original forward RES maintenance, one edge at a time. |
-| Single-edge update | `RES-interval` | Forward RES maintenance restricted by the SCC-formation influence interval. |
-| Single-edge update | `IRES3-NoInterval` | Reverse incremental maintenance without influence-interval pruning. |
-| Single-edge update | `IRES3` | IRES single-edge maintenance with the complete optimization set. |
+| Single-edge update | `RES-ET` | Forward RES maintenance restricted by the SCC-formation influence interval. |
+| Single-edge update | `ERES` | Reverse incremental maintenance without influence-interval pruning. |
+| Single-edge update | `ERES-ET` | ERES single-edge maintenance with the complete optimization set. |
 | Batch update | `RES-Batch` | Original forward timestamp-batch RES maintenance. |
-| Batch update | `IRES-Batch` | IRES batch maintenance with SCCID pruning and intra-SCC non-RES pruning. |
+| Batch update | `ERES-Batch` | ERES batch maintenance with SCCID pruning and intra-SCC non-RES pruning. |
 
-Auxiliary validation and ablation modes are also retained: `Online`, `Baseline`, `RES-Reverse`, and `IRES3-NoPrune`.
+Auxiliary validation and ablation modes are also retained: `Online`, `Baseline`, `RES-Reverse`, and `ERES-ET-NoPrune`.
 
 ## Repository Layout
 
@@ -43,7 +43,7 @@ The production executable is built from these modules:
 - `baseline`: baseline index construction and query processing.
 - `commonfunctions`: shared timing, progress, and utility functions.
 - `online_search`: index-free Historical-SCC query processing.
-- `optimized`: RES/IRES construction, maintenance, pruning, and indexed queries.
+- `optimized`: RES/ERES construction, maintenance, pruning, and indexed queries.
 - `temporal_graph`: directed temporal-graph storage.
 - `main`: command-line interface and experiment graph loader.
 
@@ -105,13 +105,13 @@ When prompted, enter the number of queries and the query-window length as a frac
 sh run.sh $1
 ```
 
-Here, `$1` can be `Online`, `Baseline`, `RES`, `IRES`, or `RES-Reverse`, corresponding to online search, the baseline index, the original RES-index, the proposed IRES-index, and the reverse RES construction, respectively. The query result is written to `output.txt`.
+Here, `$1` can be `Online`, `Baseline`, `RES-con`, `ERES-con`, or `RES-Reverse`, corresponding to online search, the baseline index, the original RES-index, the proposed ERES-index, and the reverse RES construction, respectively. The query result is written to `output.txt`.
 
 For example:
 
 ```bash
-sh run.sh RES
-sh run.sh IRES
+sh run.sh RES-con
+sh run.sh ERES-con
 ```
 
 ### PowerShell
@@ -128,8 +128,8 @@ These commands use the same interactive prompts as the Linux scripts: select the
 Run a solution with:
 
 ```powershell
-.\FINDSCC.exe graph.txt query.txt output.txt RES
-.\FINDSCC.exe graph.txt query.txt output.txt IRES
+.\FINDSCC.exe graph.txt query.txt output.txt RES-con
+.\FINDSCC.exe graph.txt query.txt output.txt ERES-con
 ```
 
 ### Amazon data
@@ -148,8 +148,8 @@ The utility maps string vertex identifiers to integers and aggregates Unix times
 To construct an index on a prefix defined by a timestamp fraction, append `subgraph`; the program then reads the fraction from standard input:
 
 ```bash
-sh run.sh RES subgraph
-sh run.sh IRES subgraph
+sh run.sh RES-con subgraph
+sh run.sh ERES-con subgraph
 ```
 
 Then input the fraction of timestamps in the subgraph, such as `0.25`.
@@ -157,7 +157,7 @@ Then input the fraction of timestamps in the subgraph, such as `0.25`.
 In PowerShell, the equivalent form is:
 
 ```powershell
-"0.25" | .\FINDSCC.exe graph.txt query.txt output.txt IRES subgraph
+"0.25" | .\FINDSCC.exe graph.txt query.txt output.txt ERES-con subgraph
 ```
 
 ## Run Update Experiments
@@ -174,27 +174,27 @@ Single-edge examples with a 20% prefix and 1,000 inserted edges:
 
 ```bash
 sh run.sh RES-Single 0.2 1000
-sh run.sh RES-interval 0.2 1000
-sh run.sh IRES3-NoInterval 0.2 1000
-sh run.sh IRES3 0.2 1000
+sh run.sh RES-ET 0.2 1000
+sh run.sh ERES 0.2 1000
+sh run.sh ERES-ET 0.2 1000
 ```
 
 Batch-update examples:
 
 ```bash
 sh run.sh RES-Batch 0.2 1000
-sh run.sh IRES-Batch 0.2 1000
+sh run.sh ERES-Batch 0.2 1000
 ```
 
 The shell wrapper uses `graph.txt`, `query.txt`, and `output.txt` automatically. The equivalent PowerShell commands are:
 
 ```powershell
 .\FINDSCC.exe graph.txt query.txt output.txt RES-Single 0.2 1000
-.\FINDSCC.exe graph.txt query.txt output.txt RES-interval 0.2 1000
-.\FINDSCC.exe graph.txt query.txt output.txt IRES3-NoInterval 0.2 1000
-.\FINDSCC.exe graph.txt query.txt output.txt IRES3 0.2 1000
+.\FINDSCC.exe graph.txt query.txt output.txt RES-ET 0.2 1000
+.\FINDSCC.exe graph.txt query.txt output.txt ERES 0.2 1000
+.\FINDSCC.exe graph.txt query.txt output.txt ERES-ET 0.2 1000
 .\FINDSCC.exe graph.txt query.txt output.txt RES-Batch 0.2 1000
-.\FINDSCC.exe graph.txt query.txt output.txt IRES-Batch 0.2 1000
+.\FINDSCC.exe graph.txt query.txt output.txt ERES-Batch 0.2 1000
 ```
 
 ## Quick Check
@@ -204,10 +204,10 @@ The `example/` directory contains a tiny graph and four query windows:
 ```bash
 cp example/graph.txt graph.txt
 cp example/query.txt query.txt
-sh run.sh IRES
+sh run.sh ERES-con
 ```
 
-For correctness checks, run `Online`, `RES`, and `IRES` on the same graph and query file and compare the generated SCC results.
+For correctness checks, run `Online`, `RES-con`, and `ERES-con` on the same graph and query file and compare the generated SCC results.
 
 ## Reported Metrics
 
@@ -220,5 +220,4 @@ Construction and update modes print:
 - index space cost in bytes; and
 - total query-processing time.
 
-Progress messages are emitted during long RES and IRES constructions so large experiments can be monitored.
-
+Progress messages are emitted during long RES and ERES constructions so large experiments can be monitored.

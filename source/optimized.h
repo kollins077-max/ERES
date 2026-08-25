@@ -15,7 +15,7 @@ class OptimizedIndex {
         int find(int u);
 
         int find_an_index(int t, int ts, int te);
-
+    
         // unioN(ts, u, v, t): perform the union operation on u and v at time t with start time ts.
 
         void kosaraju1(int now);
@@ -72,12 +72,12 @@ class OptimizedIndex {
 
         enum SingleEdgeMode {
             ORIGINAL_SINGLE_EDGE = 0,
-            REVERSE_IRES3_SINGLE_EDGE = 1,
-            REVERSE_IRES3_NO_PRUNE_SINGLE_EDGE = 2,
-            REVERSE_IRES3_NO_INTERVAL_SINGLE_EDGE = 3,
-            REVERSE_DIAGONAL_PRUNED_BATCH = 4,
+            ERES_ET_SINGLE_EDGE = 1,
+            ERES_ET_NO_PRUNE_SINGLE_EDGE = 2,
+            ERES_SINGLE_EDGE = 3,
+            ERES_BATCH = 4,
             ORIGINAL_BATCH = 5,
-            ORIGINAL_INTERVAL_SINGLE_EDGE = 6
+            RES_ET_SINGLE_EDGE = 6
         };
 
         void initializeAppearanceIntervals();
@@ -124,20 +124,20 @@ class OptimizedIndex {
         OptimizedIndex() = default;
         OptimizedIndex(TemporalGraph * Graph, double t_fraction);
         static OptimizedIndex * buildReverse(TemporalGraph * Graph, double t_fraction);
-        static OptimizedIndex * buildIRES(TemporalGraph * Graph);
+        static OptimizedIndex * buildERESConstructor(TemporalGraph * Graph);
         static OptimizedIndex * buildOriginalSingleEdge(
             TemporalGraph * Graph, double a, int b);
-        static OptimizedIndex * buildOriginalIntervalSingleEdge(
+        static OptimizedIndex * buildRESWithETSingleEdge(
             TemporalGraph * Graph, double a, int b);
         static OptimizedIndex * buildOriginalBatch(
             TemporalGraph * Graph, double a, int b);
-        static OptimizedIndex * buildReverseIRES3SingleEdge(
+        static OptimizedIndex * buildERESWithETSingleEdge(
             TemporalGraph * Graph, double a, int b);
-        static OptimizedIndex * buildReverseIRES3NoPruneSingleEdge(
+        static OptimizedIndex * buildERESWithETNoPruneSingleEdge(
             TemporalGraph * Graph, double a, int b);
-        static OptimizedIndex * buildReverseIRES3NoIntervalSingleEdge(
+        static OptimizedIndex * buildERESSingleEdge(
             TemporalGraph * Graph, double a, int b);
-        static OptimizedIndex * buildReverseDiagonalPrunedBatch(
+        static OptimizedIndex * buildERESBatch(
             TemporalGraph * Graph, double a, int b);
         ~OptimizedIndex();
 

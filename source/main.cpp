@@ -27,7 +27,7 @@ TemporalGraph * build(char * argv[], double subgraph_fraction) {
     std::cout << "Build graph success in " << timeFormatting(build_graph_end_time - build_graph_start_time).str() << std::endl;
     std::cout << "n = " << Graph->numOfVertices() << ", m = " << Graph->numOfEdges() << ", tmax = " << Graph->tmax << ", size = " << Graph->size() << " bytes" << std::endl;
     return Graph;
-
+    
 }
 
 struct ExperimentGraphMetadata {
@@ -215,12 +215,12 @@ TemporalGraph * buildExperimentGraph(char * argv[], double a, long requested) {
 }
 bool isSingleEdgeMode(const char * mode) {
     return std::strcmp(mode, "RES-Single") == 0 ||
-           std::strcmp(mode, "RES-interval") == 0 ||
+           std::strcmp(mode, "RES-ET") == 0 ||
            std::strcmp(mode, "RES-Batch") == 0 ||
-           std::strcmp(mode, "IRES3") == 0 ||
-           std::strcmp(mode, "IRES3-NoPrune") == 0 ||
-           std::strcmp(mode, "IRES3-NoInterval") == 0 ||
-           std::strcmp(mode, "IRES-Batch") == 0 ||
+           std::strcmp(mode, "ERES-ET") == 0 ||
+           std::strcmp(mode, "ERES-ET-NoPrune") == 0 ||
+           std::strcmp(mode, "ERES") == 0 ||
+           std::strcmp(mode, "ERES-Batch") == 0 ||
            std::strcmp(mode, "DRES3") == 0;
 }
 
@@ -228,7 +228,7 @@ int runSingleEdgeMode(int argc, char * argv[]) {
     if (argc != 7 || !isSingleEdgeMode(argv[4])) {
         std::cout
             << "Usage: main.exe graph.txt query.txt output.txt "
-            << "<RES-Single|RES-interval|RES-Batch|IRES3|IRES3-NoPrune|IRES3-NoInterval|IRES-Batch> <a> <b>"
+            << "<RES-Single|RES-ET|RES-Batch|ERES|ERES-ET|ERES-ET-NoPrune|ERES-Batch> <a> <b>"
             << std::endl;
         return 1;
     }
@@ -275,11 +275,11 @@ int runSingleEdgeMode(int argc, char * argv[]) {
         Index = OptimizedIndex::buildOriginalSingleEdge(
             Graph, a, int(requested));
     }
-    else if (std::strcmp(argv[4], "RES-interval") == 0) {
+    else if (std::strcmp(argv[4], "RES-ET") == 0) {
         std::cout
             << "Running forward original-paper single-edge maintenance with SCC-formation influence-interval pruning..."
             << std::endl;
-        Index = OptimizedIndex::buildOriginalIntervalSingleEdge(
+        Index = OptimizedIndex::buildRESWithETSingleEdge(
             Graph, a, int(requested));
     }
     else if (std::strcmp(argv[4], "RES-Batch") == 0) {
@@ -288,32 +288,32 @@ int runSingleEdgeMode(int argc, char * argv[]) {
         Index = OptimizedIndex::buildOriginalBatch(
             Graph, a, int(requested));
     }
-    else if (std::strcmp(argv[4], "IRES3-NoPrune") == 0) {
+    else if (std::strcmp(argv[4], "ERES-ET-NoPrune") == 0) {
         std::cout
-            << "Running IRES3 without intra-SCC non-RES edge pruning on the reverse index..."
+            << "Running ERES-ET without intra-SCC non-RES edge pruning..."
             << std::endl;
-        Index = OptimizedIndex::buildReverseIRES3NoPruneSingleEdge(
+        Index = OptimizedIndex::buildERESWithETNoPruneSingleEdge(
             Graph, a, int(requested));
     }
-    else if (std::strcmp(argv[4], "IRES3-NoInterval") == 0) {
+    else if (std::strcmp(argv[4], "ERES") == 0) {
         std::cout
-            << "Running IRES3 without SCC-formation influence-interval pruning on the reverse index..."
+            << "Running ERES single-edge maintenance..."
             << std::endl;
-        Index = OptimizedIndex::buildReverseIRES3NoIntervalSingleEdge(
+        Index = OptimizedIndex::buildERESSingleEdge(
             Graph, a, int(requested));
     }
-    else if (std::strcmp(argv[4], "IRES-Batch") == 0) {
+    else if (std::strcmp(argv[4], "ERES-Batch") == 0) {
         std::cout
             << "Running reverse end-time batch maintenance with diagonal SCCID pruning..."
             << std::endl;
-        Index = OptimizedIndex::buildReverseDiagonalPrunedBatch(
+        Index = OptimizedIndex::buildERESBatch(
             Graph, a, int(requested));
     }
     else {
         std::cout
-            << "Running IRES3 forward effective-interval supergraph incremental maintenance on the reverse index..."
+            << "Running ERES-ET single-edge maintenance with SCC-formation influence-interval pruning..."
             << std::endl;
-        Index = OptimizedIndex::buildReverseIRES3SingleEdge(
+        Index = OptimizedIndex::buildERESWithETSingleEdge(
             Graph, a, int(requested));
     }
         }
@@ -446,7 +446,7 @@ int main(int argc, char * argv[]) {
         std::cout << "Baseline completed!" << std::endl;
     }
 
-    if (std::strcmp(argv[argc - 1], "RES") == 0) {
+    if (std::strcmp(argv[argc - 1], "RES-con") == 0) {
         std::cout << "Running optimized..." << std::endl;
         std::cout << "Constructing the index structure..." << std::endl;
         unsigned long long index_construction_start_time = currentTime();
@@ -481,31 +481,31 @@ int main(int argc, char * argv[]) {
         std::cout << "Optimized completed!" << std::endl;
     }
 
-    if (std::strcmp(argv[argc - 1], "IRES") == 0) {
+    if (std::strcmp(argv[argc - 1], "ERES-con") == 0) {
         if (update_fraction > 0) {
-            std::cout << "IRES full constructor mode does not use update_fraction; please run without update." << std::endl;
+            std::cout << "ERES-con mode does not use update_fraction; please run without update." << std::endl;
             delete Graph;
             return 0;
         }
 
-        std::cout << "Running optimized IRES full constructor..." << std::endl;
+        std::cout << "Running optimized ERES full constructor..." << std::endl;
         std::cout << "Constructing the optimized end-time (t_e) index structure..." << std::endl;
         unsigned long long index_construction_start_time = currentTime();
-        OptimizedIndex *Index = OptimizedIndex::buildIRES(Graph);
+        OptimizedIndex *Index = OptimizedIndex::buildERESConstructor(Graph);
         unsigned long long index_construction_end_time = currentTime();
         if (Index == nullptr) {
-            std::cout << "IRES index construction failed." << std::endl;
+            std::cout << "ERES index construction failed." << std::endl;
             delete Graph;
             return 1;
         }
-        std::cout << "IRES index construction completed in "
+        std::cout << "ERES index construction completed in "
                   << timeFormatting(index_construction_end_time - index_construction_start_time).str()
                   << std::endl;
         std::cout << "Index cost " << Index->size() << " bytes" << std::endl;
 
         delete Graph;
         for (int i = 2; i < argc - 2; i++) {
-            std::cout << "Solving queries with the IRES index..." << std::endl;
+            std::cout << "Solving queries with the ERES index..." << std::endl;
             unsigned long long query_start_time = currentTime();
             optimized(Index, vertex_num, argv[i], argv[argc - 2]);
             unsigned long long query_end_time = currentTime();
@@ -514,7 +514,7 @@ int main(int argc, char * argv[]) {
                       << std::endl;
         }
         delete Index;
-        std::cout << "IRES optimized completed!" << std::endl;
+        std::cout << "ERES-con completed!" << std::endl;
     }
 
     if (std::strcmp(argv[argc - 1], "RES-Reverse") == 0) {
@@ -552,7 +552,7 @@ int main(int argc, char * argv[]) {
         delete Index;
         std::cout << "End-time-indexed optimized completed!" << std::endl;
     }
-
+    
     unsigned long long end_time = currentTime();
     std::cout << "Program finished in " << timeFormatting(difftime(end_time, start_time)).str() << std::endl;
 

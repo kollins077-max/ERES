@@ -35,7 +35,7 @@ struct SccResult {
     std::vector<std::vector<int>> groups;
 };
 
-struct Ires3PruningStats {
+struct ERESPruningStats {
     unsigned long long initialInternalNonResPruned = 0;
     unsigned long long initialInternalResSelected = 0;
     unsigned long long arrivalAlreadyInternal = 0;
@@ -952,7 +952,7 @@ void rebuildSuperAdjacency(
     }
 }
 
-std::set<ExperimentalEdge> computeReverseIres3IncrementalPhiForStartRange(
+std::set<ExperimentalEdge> computeERESIncrementalPhiForStartRange(
     int n,
     const std::vector<std::vector<std::pair<int,int>>>& activeEdges,
     int endTime,
@@ -960,7 +960,7 @@ std::set<ExperimentalEdge> computeReverseIres3IncrementalPhiForStartRange(
     int rightStart,
     const std::set<ExperimentalEdge>& inheritedPhi,
     bool enableIntraSccPruning,
-    Ires3PruningStats *pruningStats) {
+    ERESPruningStats *pruningStats) {
 
     std::set<ExperimentalEdge> result = inheritedPhi;
     if (n <= 0 || activeEdges.empty() || endTime < 0) {
@@ -1375,7 +1375,7 @@ int OptimizedIndex::find_an_index(int t, int ts, int te) {
     if (r == -1 || actual_time[t][r] < ts || actual_time[t][0] > te) {
         return -1;
     }
-
+    
     while (l < r) {
         int mid = l + r >> 1;
         if (actual_time[t][mid] >= ts && actual_time[t][mid] <= te) {
@@ -1404,16 +1404,16 @@ std::stringstream OptimizedIndex::solve(int n, int ts, int te) {
     if (reverseIndex) {
         return solveReverse(n, ts, te);
     }
-
+    
     std::stringstream Ans;
     std::vector<int> *CurrentCC = new std::vector<int>[n]();
     markedVertices.clear();
     markedVertices2.clear();
-
+    
     Ans << "The spanned strongly connected components in [" << ts << ", " << te << "] are:\n";
 
     top = 0;
-
+    
     for (int u = 0; u < n; u++) {
         Vis[u] = 0;
         outLabel[u].clear();
@@ -1651,7 +1651,7 @@ std::stringstream OptimizedIndex::solveReverse(int n, int ts, int te) {
 }
 
 OptimizedIndex::OptimizedIndex(TemporalGraph * Graph, double t_fraction) {
-
+    
     unsigned long long start_time = currentTime();
 
     n = Graph->numOfVertices();
@@ -1807,9 +1807,9 @@ OptimizedIndex::OptimizedIndex(TemporalGraph * Graph, double t_fraction) {
                 outLabel[g]=tmp;
                 tmp.clear();
             }
-
+            
         }
-
+        
         //update the RES-index
         tmper=key;
         if(!key.empty())
@@ -1866,7 +1866,7 @@ OptimizedIndex::OptimizedIndex(TemporalGraph * Graph, double t_fraction) {
         //     for(int i=len-1;i>=0;i--){
         //         if(actual_time[lt][i]<t1)break;
         //         if(actual_time[lt][i]==t1){
-
+                    
         //             alfa.clear();
         //             std::set<std::pair<long long,int>>::iterator iter;
         //             for(iter=S[lt][i].begin();iter!=S[lt][i].end();iter++){
@@ -2380,7 +2380,7 @@ OptimizedIndex * OptimizedIndex::buildReverse(TemporalGraph * Graph, double t_fr
     return Index;
 }
 
-OptimizedIndex * OptimizedIndex::buildIRES(TemporalGraph * Graph) {
+OptimizedIndex * OptimizedIndex::buildERESConstructor(TemporalGraph * Graph) {
     if (Graph == nullptr) {
         return nullptr;
     }
@@ -2463,7 +2463,7 @@ OptimizedIndex * OptimizedIndex::buildIRES(TemporalGraph * Graph) {
         : int(activeEdgeCount);
 
     std::cout
-        << "[IRES constructor] Full optimized end-time construction starts. "
+        << "[ERES-con] Full optimized end-time construction starts. "
         << "End anchors: " << (Index->tmax + 1)
         << ", active edges = " << activeEdgeCount
         << " / loaded edges " << Graph->numOfEdges()
@@ -2478,7 +2478,7 @@ OptimizedIndex * OptimizedIndex::buildIRES(TemporalGraph * Graph) {
     unsigned long long pruningStats[15] = {};
     if (sourceDestinationOverlapCount == 0) {
         std::cout
-            << "[IRES constructor] No active vertex has both an incoming "
+            << "[ERES-con] No active vertex has both an incoming "
             << "and an outgoing edge. A directed cycle is impossible; "
             << "all reverse RES families are empty."
             << std::endl;
@@ -2534,7 +2534,7 @@ OptimizedIndex * OptimizedIndex::buildIRES(TemporalGraph * Graph) {
         100.0 * double(pruningStats[11]) / double(activeEdgeCount);
 
     std::cout
-        << "[IRES constructor] Optimized Phi construction finished in "
+        << "[ERES-con] Optimized Phi construction finished in "
         << timeFormatting(phiMicros).str()
         << "; membership insertion = "
         << timeFormatting(membershipMicros).str()
@@ -2542,7 +2542,7 @@ OptimizedIndex * OptimizedIndex::buildIRES(TemporalGraph * Graph) {
         << timeFormatting(Index->lastMaterializationTimeMicros).str()
         << "." << std::endl;
     std::cout
-        << "[IRES constructor][Diagonal pruning] end anchors built = "
+        << "[ERES-con][Diagonal pruning] end anchors built = "
         << pruningStats[4]
         << "; SCCID checks = " << pruningStats[0]
         << "; deferred/pruned events = " << pruningStats[1]
@@ -2554,7 +2554,7 @@ OptimizedIndex * OptimizedIndex::buildIRES(TemporalGraph * Graph) {
         << "; max deferred bucket size = " << pruningStats[3]
         << "." << std::endl;
     std::cout
-        << "[IRES constructor][Internal non-RES pruning] redundant internal non-RES events = "
+        << "[ERES-con][Internal non-RES pruning] redundant internal non-RES events = "
         << pruningStats[7]
         << "; safe same-end deletions = " << pruningStats[9]
         << " (" << std::fixed << std::setprecision(2)
@@ -2565,7 +2565,7 @@ OptimizedIndex * OptimizedIndex::buildIRES(TemporalGraph * Graph) {
         << "." << std::endl;
     if (pruningStats[14] != 0) {
         std::cout
-            << "[IRES constructor][Internal non-RES pruning] unique pruned active edges = "
+            << "[ERES-con][Internal non-RES pruning] unique pruned active edges = "
             << pruningStats[11]
             << " (" << std::fixed << std::setprecision(2)
             << uniquePruneRatio
@@ -2576,11 +2576,11 @@ OptimizedIndex * OptimizedIndex::buildIRES(TemporalGraph * Graph) {
     }
     else {
         std::cout
-            << "[IRES constructor][Internal non-RES pruning] unique-event diagnostics disabled for this large construction; pruning behavior is unchanged."
+            << "[ERES-con][Internal non-RES pruning] unique-event diagnostics disabled for this large construction; pruning behavior is unchanged."
             << std::endl;
     }
     std::cout
-        << "[IRES constructor] Full optimized end-time construction finished. "
+        << "[ERES-con] Full optimized end-time construction finished. "
         << "Constructed collapsed reverse RES index entries: "
         << Index->S.size()
         << " / input edges " << Index->m
@@ -3056,7 +3056,7 @@ OptimizedIndex::computeReverseConstructorPhiRangeDiagonalPruned(
                 unsigned long long now = currentTime();
                 if (now - lastProgressReport >= progressIntervalMicros) {
                     std::cout
-                        << "[IRES constructor] Processing end anchor t_e="
+                        << "[ERES-con] Processing end anchor t_e="
                         << te << ", current start anchor t_s=" << t
                         << "; completed end anchors: "
                         << completedEndAnchors << " / " << totalEndAnchors
@@ -3455,7 +3455,7 @@ OptimizedIndex::computeReverseConstructorPhiRangeDiagonalPruned(
              te == left || skipsRemainingEmptyAnchors)) {
             unsigned long long now = currentTime();
             std::cout
-                << "[IRES constructor] Constructed fixed-end RES family for t_e="
+                << "[ERES-con] Constructed fixed-end RES family for t_e="
                 << te << "; completed end anchors: "
                 << completedEndAnchors << " / " << totalEndAnchors
                 << "; current fixed-end RES edges: "
@@ -3773,30 +3773,30 @@ OptimizedIndex * OptimizedIndex::buildSingleEdgeExperiment(
         std::size_t(requestedUpdates), stream.size() - prefixCount);
 
     const char *modeLabel = "RES-Single";
-    if (mode == ORIGINAL_INTERVAL_SINGLE_EDGE) {
-        modeLabel = "RES-interval";
+    if (mode == RES_ET_SINGLE_EDGE) {
+        modeLabel = "RES-ET";
     }
-    else if (mode == REVERSE_IRES3_SINGLE_EDGE) {
-        modeLabel = "IRES3";
+    else if (mode == ERES_ET_SINGLE_EDGE) {
+        modeLabel = "ERES-ET";
     }
-    else if (mode == REVERSE_IRES3_NO_PRUNE_SINGLE_EDGE) {
-        modeLabel = "IRES3-NoPrune";
+    else if (mode == ERES_ET_NO_PRUNE_SINGLE_EDGE) {
+        modeLabel = "ERES-ET-NoPrune";
     }
-    else if (mode == REVERSE_IRES3_NO_INTERVAL_SINGLE_EDGE) {
-        modeLabel = "IRES3-NoInterval";
+    else if (mode == ERES_SINGLE_EDGE) {
+        modeLabel = "ERES";
     }
-    else if (mode == REVERSE_DIAGONAL_PRUNED_BATCH) {
-        modeLabel = "IRES-Batch";
+    else if (mode == ERES_BATCH) {
+        modeLabel = "ERES-Batch";
     }
     else if (mode == ORIGINAL_BATCH) {
         modeLabel = "RES-Batch";
     }
 
     const bool usesReversePrefix =
-        mode == REVERSE_IRES3_SINGLE_EDGE ||
-        mode == REVERSE_IRES3_NO_PRUNE_SINGLE_EDGE ||
-        mode == REVERSE_IRES3_NO_INTERVAL_SINGLE_EDGE ||
-        mode == REVERSE_DIAGONAL_PRUNED_BATCH;
+        mode == ERES_ET_SINGLE_EDGE ||
+        mode == ERES_ET_NO_PRUNE_SINGLE_EDGE ||
+        mode == ERES_SINGLE_EDGE ||
+        mode == ERES_BATCH;
 
     std::cout << "[" << modeLabel
               << "][Stage 1/2] Initial batch construction starts. "
@@ -3947,7 +3947,7 @@ OptimizedIndex * OptimizedIndex::buildSingleEdgeExperiment(
                   << "." << std::endl;
     };
 
-    if (mode == REVERSE_DIAGONAL_PRUNED_BATCH) {
+    if (mode == ERES_BATCH) {
         std::cout << "[" << modeLabel
                   << "][Stage 1/2] Initial batch construction completed in "
                   << timeFormatting(currentTime() - initialBuildStart).str()
@@ -4227,13 +4227,13 @@ OptimizedIndex * OptimizedIndex::buildSingleEdgeExperiment(
         return Index;
     }
 
-    if (mode == REVERSE_IRES3_SINGLE_EDGE ||
-        mode == REVERSE_IRES3_NO_PRUNE_SINGLE_EDGE ||
-        mode == REVERSE_IRES3_NO_INTERVAL_SINGLE_EDGE) {
+    if (mode == ERES_ET_SINGLE_EDGE ||
+        mode == ERES_ET_NO_PRUNE_SINGLE_EDGE ||
+        mode == ERES_SINGLE_EDGE) {
         const bool enableIntraSccPruning =
-            (mode != REVERSE_IRES3_NO_PRUNE_SINGLE_EDGE);
+            (mode != ERES_ET_NO_PRUNE_SINGLE_EDGE);
         const bool enableInfluenceInterval =
-            (mode != REVERSE_IRES3_NO_INTERVAL_SINGLE_EDGE);
+            (mode != ERES_SINGLE_EDGE);
         std::cout << "[" << modeLabel
                   << "][Stage 1/2] Initial batch construction completed in "
                   << timeFormatting(currentTime() - initialBuildStart).str()
@@ -4245,18 +4245,18 @@ OptimizedIndex * OptimizedIndex::buildSingleEdgeExperiment(
         printUpdateStart();
         unsigned long long updateStageStart = currentTime();
         int activeHorizon = prefixMaximumTime;
-        Ires3PruningStats pruningStats;
-        unsigned long long ires3IntervalMicros = 0;
-        unsigned long long ires3SuperIncrementMicros = 0;
-        unsigned long long ires3FallbackMicros = 0;
-        unsigned long long ires3MembershipMicros = 0;
-        unsigned long long ires3HorizonExtendMicros = 0;
-        unsigned long long ires3EmptyIntervalCount = 0;
-        unsigned long long ires3NonEmptyIntervalCount = 0;
-        unsigned long long ires3StartAnchorCount = 0;
-        unsigned long long ires3IntervalLengthSum = 0;
-        unsigned long long ires3MaxIntervalLength = 0;
-        unsigned long long ires3FallbackCount = 0;
+        ERESPruningStats pruningStats;
+        unsigned long long eresIntervalMicros = 0;
+        unsigned long long eresSuperIncrementMicros = 0;
+        unsigned long long eresFallbackMicros = 0;
+        unsigned long long eresMembershipMicros = 0;
+        unsigned long long eresHorizonExtendMicros = 0;
+        unsigned long long eresEmptyIntervalCount = 0;
+        unsigned long long eresNonEmptyIntervalCount = 0;
+        unsigned long long eresStartAnchorCount = 0;
+        unsigned long long eresIntervalLengthSum = 0;
+        unsigned long long eresMaxIntervalLength = 0;
+        unsigned long long eresFallbackCount = 0;
         for (std::size_t offset = 0; offset < updateCount; ++offset) {
             const StreamEdge& newEdge = stream[prefixCount + offset];
             unsigned long long updateStart = currentTime();
@@ -4270,7 +4270,7 @@ OptimizedIndex * OptimizedIndex::buildSingleEdgeExperiment(
                      end <= newActiveHorizon; ++end) {
                     Index->addPhiMembershipAt(end, previousPhi);
                 }
-                ires3HorizonExtendMicros += currentTime() - horizonStart;
+                eresHorizonExtendMicros += currentTime() - horizonStart;
             }
 
             std::pair<int,int> interval;
@@ -4278,7 +4278,7 @@ OptimizedIndex * OptimizedIndex::buildSingleEdgeExperiment(
                 unsigned long long intervalStart = currentTime();
                 interval = computePaperInfluenceInterval(
                     Index->n, activeEdges, newEdge);
-                ires3IntervalMicros += currentTime() - intervalStart;
+                eresIntervalMicros += currentTime() - intervalStart;
             }
             else {
                 interval = std::make_pair(
@@ -4295,11 +4295,11 @@ OptimizedIndex * OptimizedIndex::buildSingleEdgeExperiment(
                 if (left <= right) {
                     unsigned long long length =
                         static_cast<unsigned long long>(right - left + 1);
-                    ++ires3NonEmptyIntervalCount;
-                    ires3StartAnchorCount += length;
-                    ires3IntervalLengthSum += length;
-                    ires3MaxIntervalLength =
-                        std::max(ires3MaxIntervalLength, length);
+                    ++eresNonEmptyIntervalCount;
+                    eresStartAnchorCount += length;
+                    eresIntervalLengthSum += length;
+                    eresMaxIntervalLength =
+                        std::max(eresMaxIntervalLength, length);
 
                     std::set<EncodedEdge> previousPhi =
                         Index->recoverPhiAt(newActiveHorizon);
@@ -4309,7 +4309,7 @@ OptimizedIndex * OptimizedIndex::buildSingleEdgeExperiment(
 
                     unsigned long long superIncrementStart = currentTime();
                     std::set<EncodedEdge> updatedPhi =
-                        computeReverseIres3IncrementalPhiForStartRange(
+                        computeERESIncrementalPhiForStartRange(
                             Index->n,
                             activeEdges,
                             newActiveHorizon,
@@ -4318,7 +4318,7 @@ OptimizedIndex * OptimizedIndex::buildSingleEdgeExperiment(
                             previousPhi,
                             enableIntraSccPruning,
                             &pruningStats);
-                    ires3SuperIncrementMicros +=
+                    eresSuperIncrementMicros +=
                         currentTime() - superIncrementStart;
 
                     if (updatedPhi.size() > phiLimit) {
@@ -4335,8 +4335,8 @@ OptimizedIndex * OptimizedIndex::buildSingleEdgeExperiment(
                         if (phiIt != phiByEnd.end()) {
                             updatedPhi = phiIt->second;
                         }
-                        ++ires3FallbackCount;
-                        ires3FallbackMicros +=
+                        ++eresFallbackCount;
+                        eresFallbackMicros +=
                             currentTime() - fallbackStart;
                     }
 
@@ -4344,17 +4344,17 @@ OptimizedIndex * OptimizedIndex::buildSingleEdgeExperiment(
                     Index->removePhiMembershipRange(
                         newActiveHorizon, newActiveHorizon);
                     Index->addPhiMembershipAt(newActiveHorizon, updatedPhi);
-                    ires3MembershipMicros +=
+                    eresMembershipMicros +=
                         currentTime() - membershipStart;
                 }
                 else {
-                    ++ires3EmptyIntervalCount;
+                    ++eresEmptyIntervalCount;
                     activeEdges[newEdge.t].push_back(
                         std::make_pair(newEdge.u, newEdge.v));
                 }
             }
             else {
-                ++ires3EmptyIntervalCount;
+                ++eresEmptyIntervalCount;
                 activeEdges[newEdge.t].push_back(
                     std::make_pair(newEdge.u, newEdge.v));
             }
@@ -4374,40 +4374,40 @@ OptimizedIndex * OptimizedIndex::buildSingleEdgeExperiment(
         if (enableInfluenceInterval) {
             std::cout
                 << "Forward effective interval calls: " << updateCount
-                << "; empty intervals = " << ires3EmptyIntervalCount
-                << "; non-empty intervals = " << ires3NonEmptyIntervalCount;
+                << "; empty intervals = " << eresEmptyIntervalCount
+                << "; non-empty intervals = " << eresNonEmptyIntervalCount;
         }
         else {
             std::cout
                 << "SCC-formation influence-interval pruning is DISABLED"
                 << "; full-range incremental updates = "
-                << ires3NonEmptyIntervalCount;
+                << eresNonEmptyIntervalCount;
         }
         std::cout
             << "; incrementally traversed start anchors = "
-            << ires3StartAnchorCount
-            << "; safety fallbacks = " << ires3FallbackCount;
+            << eresStartAnchorCount
+            << "; safety fallbacks = " << eresFallbackCount;
         if (enableInfluenceInterval) {
             std::cout << "; average non-empty interval length = ";
         }
         else {
             std::cout << "; average full-range traversal length = ";
         }
-        if (ires3NonEmptyIntervalCount == 0) {
+        if (eresNonEmptyIntervalCount == 0) {
             std::cout << "0";
         }
         else {
             std::cout
-                << double(ires3IntervalLengthSum) /
-                   double(ires3NonEmptyIntervalCount);
+                << double(eresIntervalLengthSum) /
+                   double(eresNonEmptyIntervalCount);
         }
         std::cout
-            << "; max interval length = " << ires3MaxIntervalLength
+            << "; max interval length = " << eresMaxIntervalLength
             << "." << std::endl;
         std::cout
             << "[" << modeLabel
             << "][Profile] Horizon extension time = "
-            << timeFormatting(ires3HorizonExtendMicros).str();
+            << timeFormatting(eresHorizonExtendMicros).str();
         if (enableInfluenceInterval) {
             std::cout << "; forward interval computation time = ";
         }
@@ -4415,13 +4415,13 @@ OptimizedIndex * OptimizedIndex::buildSingleEdgeExperiment(
             std::cout << "; influence interval computation time (disabled) = ";
         }
         std::cout
-            << timeFormatting(ires3IntervalMicros).str()
+            << timeFormatting(eresIntervalMicros).str()
             << "; incremental supergraph construction time = "
-            << timeFormatting(ires3SuperIncrementMicros).str()
+            << timeFormatting(eresSuperIncrementMicros).str()
             << "; safety fallback time = "
-            << timeFormatting(ires3FallbackMicros).str()
+            << timeFormatting(eresFallbackMicros).str()
             << "; membership replace time = "
-            << timeFormatting(ires3MembershipMicros).str()
+            << timeFormatting(eresMembershipMicros).str()
             << "." << std::endl;
 
         unsigned long long totalNonResPruned =
@@ -4616,10 +4616,10 @@ OptimizedIndex * OptimizedIndex::buildOriginalSingleEdge(
         Graph, a, b, ORIGINAL_SINGLE_EDGE);
 }
 
-OptimizedIndex * OptimizedIndex::buildOriginalIntervalSingleEdge(
+OptimizedIndex * OptimizedIndex::buildRESWithETSingleEdge(
     TemporalGraph * Graph, double a, int b) {
     return buildSingleEdgeExperiment(
-        Graph, a, b, ORIGINAL_INTERVAL_SINGLE_EDGE);
+        Graph, a, b, RES_ET_SINGLE_EDGE);
 }
 
 OptimizedIndex * OptimizedIndex::buildOriginalBatch(
@@ -4628,28 +4628,28 @@ OptimizedIndex * OptimizedIndex::buildOriginalBatch(
         Graph, a, b, ORIGINAL_BATCH);
 }
 
-OptimizedIndex * OptimizedIndex::buildReverseIRES3SingleEdge(
+OptimizedIndex * OptimizedIndex::buildERESWithETSingleEdge(
     TemporalGraph * Graph, double a, int b) {
     return buildSingleEdgeExperiment(
-        Graph, a, b, REVERSE_IRES3_SINGLE_EDGE);
+        Graph, a, b, ERES_ET_SINGLE_EDGE);
 }
 
-OptimizedIndex * OptimizedIndex::buildReverseIRES3NoPruneSingleEdge(
+OptimizedIndex * OptimizedIndex::buildERESWithETNoPruneSingleEdge(
     TemporalGraph * Graph, double a, int b) {
     return buildSingleEdgeExperiment(
-        Graph, a, b, REVERSE_IRES3_NO_PRUNE_SINGLE_EDGE);
+        Graph, a, b, ERES_ET_NO_PRUNE_SINGLE_EDGE);
 }
 
-OptimizedIndex * OptimizedIndex::buildReverseIRES3NoIntervalSingleEdge(
+OptimizedIndex * OptimizedIndex::buildERESSingleEdge(
     TemporalGraph * Graph, double a, int b) {
     return buildSingleEdgeExperiment(
-        Graph, a, b, REVERSE_IRES3_NO_INTERVAL_SINGLE_EDGE);
+        Graph, a, b, ERES_SINGLE_EDGE);
 }
 
-OptimizedIndex * OptimizedIndex::buildReverseDiagonalPrunedBatch(
+OptimizedIndex * OptimizedIndex::buildERESBatch(
     TemporalGraph * Graph, double a, int b) {
     return buildSingleEdgeExperiment(
-        Graph, a, b, REVERSE_DIAGONAL_PRUNED_BATCH);
+        Graph, a, b, ERES_BATCH);
 }
 
 int OptimizedIndex::timeHorizon() const {
@@ -4968,7 +4968,7 @@ void OptimizedIndex::modify(TemporalGraph * Graph,int tpre,int tim){
     unsigned long long start_time = currentTime();
     std::map<std::pair<long long,int>, std::pair<int,int> >mp;
     mp.clear();
-
+    
     for(int i=0;i<=tim;i++){
         for(int u=0;u<n;u++){
             f[u]=u;
@@ -5017,7 +5017,7 @@ void OptimizedIndex::modify(TemporalGraph * Graph,int tpre,int tim){
                 kosaraju4(u,u,ts);
                 //std::sort(CC.begin(),CC.end());
                 //CurrentCC[CC[0]]=CC;
-            }
+            }    
             // for (int i = 0; i <= ts; i++) {
             //     int idx = find_an_index(i, ts, te);
             //     if (idx == -1) {
@@ -5115,7 +5115,7 @@ void OptimizedIndex::modify(TemporalGraph * Graph,int tpre,int tim){
             for(int u=0;u<n;u++)Vis[u]=0;
             markedVertices.clear();
             markedVertices2.clear();
-
+            
                 while(top){
                     int u=Sta[top];top--;
                     int g=find(u);
@@ -5176,7 +5176,7 @@ void OptimizedIndex::modify(TemporalGraph * Graph,int tpre,int tim){
             }
         if(i%100==0)
         putProcess(double(i) / tmax, currentTime() - start_time);
-
+        
     }
     //std::cerr<<mp.size()<<'\n';
     for(auto state:mp){
@@ -5214,7 +5214,7 @@ void OptimizedIndex::modify(TemporalGraph * Graph,int tpre,int tim){
         //         G[p.first][0]=tmp;
         //     }
         // }
-    }
+    }    
     for(int i=0;i<=tim;i++){
         sort(G[i].begin(),G[i].end(),cmp);
     }
@@ -5222,7 +5222,7 @@ void OptimizedIndex::modify(TemporalGraph * Graph,int tpre,int tim){
         sort(Chunk[i].begin(),Chunk[i].end(),cmp);
     }
 }
-
+    
 
 void OptimizedIndex::update(TemporalGraph * Graph){
     modify(Graph,t1,tmax);
