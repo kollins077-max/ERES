@@ -17,7 +17,7 @@ The executable provides the following primary experiment modes.
 | Single-edge update | `ERES` | Reverse incremental maintenance without influence-interval pruning. |
 | Single-edge update | `ERES-ET` | ERES single-edge maintenance with the complete optimization set. |
 | Batch update | `RES-Batch` | Original forward timestamp-batch RES maintenance. |
-| Batch update | `ERES-Batch` | ERES batch maintenance with SCCID pruning and intra-SCC non-RES pruning. |
+| Batch update | `ERES-Batch` | ERES batch maintenance with SCCID pruning. |
 
 Auxiliary validation and ablation modes are also retained: `Online`, `Baseline`, `RES-Reverse`, and `ERES-ET-NoPrune`.
 
