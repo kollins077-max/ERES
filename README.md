@@ -1,6 +1,6 @@
-# ERES: End-Time-Based RES for Historical-SCC Queries
+# ERES: End-Time-Based RES for Window-SCC Queries
 
-This repository contains the C++ implementation and experiment drivers for ERES, an incremental index for Historical Strongly Connected Component (Historical-SCC) queries on directed temporal graphs. The implementation extends the RES codebase released with [spannedSCC](https://github.com/ForwardStar/spannedSCC).
+This repository contains the C++ implementation and experiment drivers for ERES, an incremental index for Strongly Connected Component (Window-SCC) queries on directed temporal graphs. The implementation extends the RES codebase released with [spannedSCC](https://github.com/ForwardStar/spannedSCC).
 
 The public artifact focuses on executable code and data-preparation utilities. Experimental datasets and manuscript files are not included.
 
@@ -10,13 +10,13 @@ The executable provides the following primary experiment modes.
 
 | Task | Mode | Description |
 |---|---|---|
-| Full construction | `RES-con` | Original start-time-oriented RES construction. |
-| Full construction | `ERES-con` | End-time-oriented ERES construction with reverse-chronological reuse and pruning. |
-| Single-edge update | `RES-Single` | Original forward RES maintenance, one edge at a time. |
-| Single-edge update | `RES-ET` | Forward RES maintenance restricted by the SCC-formation influence interval. |
-| Single-edge update | `ERES` | Reverse incremental maintenance without influence-interval pruning. |
+| Full construction | `RES-con` | Original RES construction. |
+| Full construction | `ERES-con` | ERES construction with reverse-chronological reuse and pruning. |
+| Single-edge update | `RES-Single` | Original forward RES maintenance, single edge at one time. |
+| Single-edge update | `RES-ET` | RES maintenance restricted by the SCC-formation influence interval. |
+| Single-edge update | `ERES` | Reverse incremental maintenance without SCC-formation influence interval pruning. |
 | Single-edge update | `ERES-ET` | ERES single-edge maintenance with the complete optimization set. |
-| Batch update | `RES-Batch` | Original forward timestamp-batch RES maintenance. |
+| Batch update | `RES-Batch` | Original RES maintenance. |
 | Batch update | `ERES-Batch` | ERES batch maintenance with SCCID pruning. |
 
 Auxiliary validation and ablation modes are also retained: `Online`, `Baseline`, `RES-Reverse`, and `ERES-ET-NoPrune`.
@@ -33,7 +33,7 @@ Auxiliary validation and ablation modes are also retained: `Online`, `Baseline`,
 |-- query-gen.py            temporal-window query generator
 |-- query-gen.sh            shell wrapper for query-gen.py
 |-- Makefile                Linux compilation used by run.sh
-|-- IRES.vcxproj            Visual Studio Release/x64 project
+|-- ERES.vcxproj            Visual Studio Release/x64 project
 |-- run.sh                  build-and-run wrapper
 `-- README.md
 ```
@@ -42,7 +42,7 @@ The production executable is built from these modules:
 
 - `baseline`: baseline index construction and query processing.
 - `commonfunctions`: shared timing, progress, and utility functions.
-- `online_search`: index-free Historical-SCC query processing.
+- `online_search`: index-free Window-SCC query processing.
 - `optimized`: RES/ERES construction, maintenance, pruning, and indexed queries.
 - `temporal_graph`: directed temporal-graph storage.
 - `main`: command-line interface and experiment graph loader.
@@ -75,7 +75,7 @@ Each line of the query file is a closed time window:
 start_time end_time
 ```
 
-The executable writes the Historical-SCC result for every query to the specified output file.
+The executable writes the Window-SCC result for every query to the specified output file.
 
 ## How to Use It
 
