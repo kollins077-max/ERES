@@ -116,7 +116,7 @@ sh run.sh ERES-con
 
 ### PowerShell
 
-On Windows, first build `IRES.vcxproj` with the `Release|x64` configuration in Visual Studio. Then generate graph and query data with:
+On Windows, first build `ERES.vcxproj` with the `Release|x64` configuration in Visual Studio. Then generate graph and query data with:
 
 ```powershell
 python .\graph-gen.py
